@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Configuration
-INPUT_DIR="generated_mutants_pymol"
+INPUT_DIR="generated_mutants"
 OUTPUT_DIR="relax_results"
 SUMMARY_FILE="rosetta_relax_summary.csv"
 ROSETTA_BIN="$ROSETTA3/bin/relax.static.linuxgccrelease"

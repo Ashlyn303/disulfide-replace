@@ -10,7 +10,6 @@ The goal is to search within maximal heavy atom conserving and hydrophobic combi
 2.  **Combinatorial Search**: Construct a search where we consider **Ala and Val** at each former Cys site, and consider **Leu, Ile, and Met** at each neighboring site that is already Leu, Ile, or Met.
     -   Example: A local cluster of `[Leu, Cys, Met, Cys]` becomes `[LIM][AV][LIM][AV]`.
 3.  **Heavy Atom Conservation**: Within this set, only combinations that **maintain or reduce the number of heavy atoms** are legal (e.g., no double Valine mutants).
-    -   This restriction leaves **27 legal combinations** (3*3*3) per group. The experimental leads are expected to be at the top of this short list.
 
 ## Workflow Overview
 
