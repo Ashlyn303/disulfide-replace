@@ -1,5 +1,5 @@
 # Load the specific structure [cite: 1]
-load /Users/szu-hsuan/Library/CloudStorage/Dropbox/python3/anti-HIV_Utag/reimplement_deroo_scFv_disulf_removal_v2/5B3N.cif
+load input_files/5B3N.cif
 
 # Select disulfide Cys sidechain atoms (CB, SG)
 select ds_atoms, (resn CYS and (name CB or name SG))

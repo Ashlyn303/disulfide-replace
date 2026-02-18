@@ -2,8 +2,8 @@
 
 # Configuration
 INPUT_DIR="generated_mutants"
-OUTPUT_DIR="relax_results"
-SUMMARY_FILE="rosetta_relax_summary.csv"
+OUTPUT_DIR="rosetta_fastrelax_results"
+SUMMARY_FILE="rosetta_fastrelax_summary.csv"
 ROSETTA_BIN="$ROSETTA3/bin/relax.static.linuxgccrelease"
 REPLICATES=3
 
