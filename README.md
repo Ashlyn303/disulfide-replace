@@ -72,3 +72,11 @@ Performs simple energy minimization on the mutants.
 -   **`rosetta_minimizeenergy_results/`**: Rosetta minimization output files.
 -   **`rosetta_fastrelax_summary.csv`**: Aggregated scores and mutation details for FastRelax.
 -   **`rosetta_minimizeenergy_summary.csv`**: Aggregated scores for minimization.
+
+## Software Citations
+
+### Rosetta
+"Computational modeling and design were performed using Rosetta version 2023.45 (release a6d9ba8). Leman, J. K., et al. (2020). 'Macromolecular modeling and design in Rosetta: recent methods and frameworks.' Nature Methods, 17(7), 665-680."
+
+### PyMOL
+"Molecular visualizations were generated using The PyMOL Molecular Graphics System, Version 3.1.3, Schrödinger, LLC."
