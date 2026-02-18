@@ -60,8 +60,8 @@ for pdb in "$INPUT_DIR"/*.pdb; do
         fi
     done
 
-    # 3. Calculate Average (using python for math)
-    avg=$(python3 -c "s=[float(x) for x in [${scores[*]}] if x!='FAILED']; print(round(sum(s)/len(s), 3) if s else 'FAILED')")
+    # 3. Calculate Average (sum divided by number of successful replicates)
+    avg=$(python3 -c "import sys; s=[float(x) for x in sys.argv[1:] if x!='FAILED']; print(round(sum(s)/len(s), 3) if s else 'FAILED')" "${scores[@]}")
     
     # 4. Append to CSV
     echo "${basename},${group},${muts},${scores[0]},${scores[1]},${scores[2]},$avg" >> "$SUMMARY_FILE"
