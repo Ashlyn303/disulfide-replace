@@ -23,9 +23,9 @@ from pymol import stored
 stored.lim_info = []
 stored.cys_info = []
 
-# Collect (Name, Index) for neighbors and disulfides
-cmd.iterate("(near_lim and name CA)", "stored.lim_info.append((resn, resi))")
-cmd.iterate("(resn CYS and name CA)", "stored.cys_info.append((resn, resi))")
+# Collect (Chain, Name, Index) for neighbors and disulfides
+cmd.iterate("(near_lim and name CA)", "stored.lim_info.append((chain, resn, resi))")
+cmd.iterate("(resn CYS and name CA)", "stored.cys_info.append((chain, resn, resi))")
 
 print("\n--- Identified Residues ---")
 print("LIM Neighbors:", stored.lim_info)

@@ -36,7 +36,6 @@ for pdb in "$INPUT_DIR"/*.pdb; do
     # Clean the PDB for stability
     grep -E "^ATOM|^TER|^END" "$pdb" > "${pdb}.clean"
     
-    echo "Processing: $basename | Mutations: $muts"
     
     # Run Rosetta
     $ROSETTA_BIN \
@@ -47,10 +46,13 @@ for pdb in "$INPUT_DIR"/*.pdb; do
     
     SCORE_FILE="$OUTPUT_DIR/${basename}_score.sc"
     
+    
     if [ -f "$SCORE_FILE" ]; then
         score=$(grep "SCORE:" "$SCORE_FILE" | tail -n 1 | awk '{print $2}')
+    	echo "$basename | Mutations: $muts | Score: $score"
         echo "${basename},${group},${muts},${score}" >> "$SUMMARY_FILE"
     else
+    	echo "FAILED: $basename | Mutations: $muts"
         echo "${basename},${group},${muts},FAILED" >> "$SUMMARY_FILE"
     fi
     
