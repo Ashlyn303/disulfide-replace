@@ -1,4 +1,13 @@
-# Load the specific structure [cite: 1]
+# Check for input file availability
+python
+import os
+input_pdb = "input_files/5B3N.cif"
+if not os.path.exists(input_pdb):
+    print(f"ERROR: Input file {input_pdb} not found. Stopping.")
+    quit()
+python end
+
+# Load the specific structure
 load input_files/5B3N.cif
 
 # Select disulfide Cys sidechain atoms (CB, SG)

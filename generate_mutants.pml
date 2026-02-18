@@ -21,7 +21,11 @@ def generate_group_mutants(prefix, cys_sites, lim_sites):
     for combo in all_combos:
         if sum(atom_map[res] for res in combo) <= wt_total:
             # Re-load clean structure for each mutant
-            cmd.load("5B3N.cif", "temp_mutant")
+            input_pdb = "input_files/5B3N.cif"
+            if not os.path.exists(input_pdb):
+                print(f"ERROR: Input file {input_pdb} not found. Stopping.")
+                return
+            cmd.load(input_pdb, "temp_mutant")
             wizard = cmd.get_wizard()
             
             # Apply 4 mutations (2 LIM, 2 CYS)

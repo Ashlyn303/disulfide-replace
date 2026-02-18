@@ -68,6 +68,7 @@ Performs simple energy minimization on the mutants.
 ## Outputs
 
 -   **`generated_mutants/`**: Folder containing mutated PDB structures.
--   **`relax_results/`**: Rosetta FastRelax output files.
--   **`minimized_results/`**: Rosetta minimization output files.
--   **`rosetta_relax_summary.csv`**: Aggregated scores and mutation details for inspection.
+-   **`rosetta_fastrelax_results/`**: Rosetta FastRelax output files.
+-   **`rosetta_minimizeenergy_results/`**: Rosetta minimization output files.
+-   **`rosetta_fastrelax_summary.csv`**: Aggregated scores and mutation details for FastRelax.
+-   **`rosetta_minimizeenergy_summary.csv`**: Aggregated scores for minimization.
