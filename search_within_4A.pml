@@ -1,3 +1,4 @@
+reinitialize
 # Check for input file availability
 python
 import os

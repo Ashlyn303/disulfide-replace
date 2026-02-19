@@ -1,3 +1,4 @@
+reinitialize
 python
 import itertools
 import os
