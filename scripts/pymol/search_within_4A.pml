@@ -9,7 +9,7 @@ if not os.path.exists(input_pdb):
 python end
 
 # Load the specific structure
-load input_files/5B3N.cif
+load inputs/5B3N.cif
 
 # Select disulfide Cys sidechain atoms (CB, SG)
 select ds_atoms, (resn CYS and (name CB or name SG))

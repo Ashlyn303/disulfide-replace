@@ -8,8 +8,10 @@ import re
 
 # Configuration: Filenames relative to the script's directory
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-INPUT_FILE = os.path.join(SCRIPT_DIR, "results", "tables", "rosetta_fastrelax_summary.csv")
-OUTPUT_DIR = os.path.join(SCRIPT_DIR, "results", "figures")
+# New: Handle nested directory structure in scripts/analysis/
+PROJECT_ROOT = os.path.dirname(os.path.dirname(SCRIPT_DIR))
+INPUT_FILE = os.path.join(PROJECT_ROOT, "results", "tables", "rosetta_fastrelax_summary.csv")
+OUTPUT_DIR = os.path.join(PROJECT_ROOT, "results", "figures")
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
 AA_MAP = {

@@ -7,13 +7,16 @@ Since Rosetta environments are complex, we provide streamlined entry points. Ass
 
 ```bash
 # 1. Identify disulfide neighbors (Group 1 & 2)
-pymol -qc search_within_4A.pml
+pymol -qc scripts/pymol/search_within_4A.pml
 
 # 2. Generate combinatorial hydrophobic mutants
-pymol -qc generate_mutants.pml
+pymol -qc scripts/pymol/generate_mutants.pml
 
 # 3. High-resolution scoring and relaxation (parallel)
-./runit_fastrelax_parallel.sh
+./scripts/rosetta/runit_fastrelax_parallel.sh
+
+# 4. Visualize results
+python scripts/analysis/plot_fastrelax_results.py
 ```
 
 ## Reproducibility Note
@@ -27,10 +30,10 @@ This prevents stochastic variance from affecting the final mutant rankings durin
 The project is structured to separate inputs, logic, and results for a professional scientific workflow:
 
 - **`inputs/`**: Source protein structures (e.g., `5B3N.cif`) and **generated mutants**.
-- **`logic/`** (Scripts):
-    - `.pml` scripts for neighbor identification and mutagenesis.
-    - `.sh` scripts for Rosetta execution (parallelized).
-    - `.py` scripts for data aggregation and visualization.
+- **`scripts/`** (Pipeline Logic):
+    - `pymol/`: Identification and mutagenesis scripts (`.pml`).
+    - `rosetta/`: Production Rosetta execution scripts (`.sh`).
+    - `analysis/`: Plotting and statistics scripts (`.py`).
 - **`results/`**: 
     - `figures/`: Professional plots and visualizations.
     - `tables/`: Summary CSV files with aggregated rankings.

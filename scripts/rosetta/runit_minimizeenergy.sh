@@ -1,9 +1,12 @@
 #!/bin/bash
 
 # Configuration
-INPUT_DIR="inputs/generated_mutants"
-OUTPUT_DIR="results/rosetta_minimizeenergy_results"
-SUMMARY_FILE="results/tables/rosetta_minimizeenergy_summary.csv"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
+
+INPUT_DIR="$PROJECT_ROOT/inputs/generated_mutants"
+OUTPUT_DIR="$PROJECT_ROOT/results/rosetta_minimizeenergy_results"
+SUMMARY_FILE="$PROJECT_ROOT/results/tables/rosetta_minimizeenergy_summary.csv"
 ROSETTA_BIN="$ROSETTA3/bin/minimize.static.linuxgccrelease"
 mkdir -p "$OUTPUT_DIR" "$(dirname "$SUMMARY_FILE")"
 LOG_DIR="$OUTPUT_DIR"

@@ -1,9 +1,12 @@
 #!/bin/bash
 
 # Configuration
-INPUT_DIR="rosetta_minimizeenergy_results_top5"
-OUTPUT_DIR="results/rosetta_fastrelax_results"
-SUMMARY_FILE="results/tables/rosetta_fastrelax_summary.csv"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
+
+INPUT_DIR="$PROJECT_ROOT/inputs/rosetta_minimizeenergy_results_top5"
+OUTPUT_DIR="$PROJECT_ROOT/results/rosetta_fastrelax_results"
+SUMMARY_FILE="$PROJECT_ROOT/results/tables/rosetta_fastrelax_summary.csv"
 ROSETTA_BIN="$ROSETTA3/bin/relax.static.linuxgccrelease"
 REPLICATES=20
 PARALLEL_JOBS=20
