@@ -56,8 +56,8 @@ for pdb in "$INPUT_DIR"/*.pdb; do
         -ignore_unrecognized_res \
         -overwrite > "$log_file" 2>&1
     
-    # Extract seed from log (robust search)
-    seed=$(grep -i "seed" "$log_file" | grep -o "[0-9]\+$" | head -n 1)
+    # Extract seed from log (highly robust search)
+    seed=$(grep -i "seed" "$log_file" | grep -oE "[0-9]{4,}" | head -n 1)
     
     SCORE_FILE="$OUTPUT_DIR/${basename}_score.sc"
     

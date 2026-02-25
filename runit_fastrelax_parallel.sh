@@ -6,8 +6,8 @@ INPUT_DIR="rosetta_minimizeenergy_results_top5"
 OUTPUT_DIR="rosetta_fastrelax_results"
 SUMMARY_FILE="rosetta_fastrelax_summary.csv"
 ROSETTA_BIN="$ROSETTA3/bin/relax.static.linuxgccrelease"
-REPLICATES=50
-PARALLEL_JOBS=25
+REPLICATES=20
+PARALLEL_JOBS=20
 
 # Create output directory and header
 mkdir -p "$OUTPUT_DIR"
@@ -53,13 +53,13 @@ for pdb in "$INPUT_DIR"/*.pdb; do
             $ROSETTA_BIN \
                 -s "${pdb}.clean" \
                 -relax:fast \
-                -run:constant_seed true \
-                -run:jran 11105 \
+                -run:constant_seed false \
                 -out:path:all "$OUTPUT_DIR" \
                 -out:prefix "${basename}_rep${i}_" \
                 -overwrite > "$log_file" 2>&1
 
-            seed=$(grep -i "seed" "$log_file" | grep -o "[0-9]\+$" | head -n 1)
+            # Extract seed (highly robust search)
+            seed=$(grep -i "seed" "$log_file" | grep -oE "[0-9]{4,}" | head -n 1)
             echo "Processing: $basename (Rep $i) | Mutations: $muts | Seed: $seed"
 
             SCORE_FILE="$OUTPUT_DIR/${basename}_rep${i}_score.sc"

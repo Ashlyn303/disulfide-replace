@@ -51,15 +51,19 @@ This will create a `generated_mutants` folder containing the mutated `.pdb` file
 ### 3. Rosetta Evaluation
 Run the provided shell scripts to evaluate the mutants using Rosetta.
 
+#### Reproducibility (Seeds)
+- **Energy Minimization**: Uses a constant seed (`-run:jran 11105`) to ensure deterministic results.
+- **FastRelax**: Uses **random seeds** for each replicate to ensure diverse sampling and robust convergence.
+
 #### FastRelax
-Performs a standard FastRelax with 3 replicates per mutant and generates a summary CSV.
+Performs parallel FastRelax (default 20 replicates) and generates a summary CSV and plots.
 
 ```bash
-./runit_fastrelax.sh
+./runit_fastrelax_parallel.sh
 ```
 
 #### Energy Minimization
-Performs simple energy minimization on the mutants.
+Performs energy minimization on the mutants with deterministic output.
 
 ```bash
 ./runit_minimizeenergy.sh
