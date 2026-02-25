@@ -20,69 +20,68 @@ def main():
     # Filter out FAILED rows
     df = df[df['avg_score'] != 'FAILED'].copy()
     
-    # Ensure scores are numeric
-    rep_cols = [f'rep{i}' for i in range(1, 21)]
+    # Dynamically identify all replicate columns (rep1, rep2, ..., repN)
+    rep_cols = [col for col in df.columns if col.startswith('rep')]
     for col in rep_cols + ['avg_score', 'std_score']:
         df[col] = pd.to_numeric(df[col], errors='coerce')
 
-    # Sort by avg_score (most negative first)
-    df = df.sort_values('avg_score', ascending=True)
+    # Get unique groups to generate separate figures
+    unique_groups = sorted(df['group'].unique())
+    print(f"Found groups: {unique_groups}")
 
-    # Melt the dataframe for plotting individual replicates
-    # This transforms the data into a 'long' format suitable for sns.stripplot
-    df_melted = df.melt(
-        id_vars=['mutations', 'group', 'avg_score'], 
-        value_vars=rep_cols, 
-        var_name='replicate', 
-        value_name='score'
-    )
+    for group in unique_groups:
+        print(f"Generating plot for group: {group}...")
+        
+        # Filter data for this group
+        group_df = df[df['group'] == group].copy()
+        
+        # Sort by avg_score (most negative first)
+        group_df = group_df.sort_values('avg_score', ascending=True)
 
-    # Plotting
-    plt.figure(figsize=(14, 8))
-    sns.set_theme(style="whitegrid")
-    
-    # 1. Plot the Box Plot (Showing distribution: median, quartiles, range)
-    # This naturally handles the 'distribution' without drawing bars from zero
-    sns.boxplot(
-        data=df_melted,
-        x='mutations',
-        y='score',
-        hue='group',
-        palette='viridis',
-        dodge=False,
-        width=0.6,
-        showfliers=False,  # Fliers are shown by the stripplot
-        boxprops=dict(alpha=0.6)
-    )
+        # Melt the dataframe for plotting individual replicates
+        group_df_melted = group_df.melt(
+            id_vars=['mutations', 'group', 'avg_score'], 
+            value_vars=rep_cols, 
+            var_name='replicate', 
+            value_name='score'
+        )
 
-    # 2. Overlay individual points (Stripplot)
-    # This shows every single one of the 20 replicates
-    # sns.stripplot(
-    #     data=df_melted,
-    #     x='mutations',
-    #     y='score',
-    #     hue='group',
-    #     dodge=False,
-    #     jitter=0.2,
-    #     size=4,
-    #     alpha=0.5,
-    #     palette='viridis',
-    #     legend=False  # Avoid duplicate legend
-    # )
+        # Plotting
+        plt.figure(figsize=(14, 8))
+        sns.set_theme(style="whitegrid")
+        
+        # Enforce the sorting order explicitly
+        sort_order = group_df['mutations'].tolist()
 
-    # plt.title('Rosetta FastRelax Results (Score Distributions)', fontsize=16)
-    # plt.xlabel('Mutant (Mutations)', fontsize=12)
-    # plt.ylabel('Rosetta Total Score (ref2015)', fontsize=12)
-    
-    # Rotate x-axis labels for better readability
-    plt.xticks(rotation=45, ha='right')
-    
-    # Legend handling
-    plt.legend(title='Group', bbox_to_anchor=(1.05, 1), loc='upper left')
-    
-    plt.tight_layout()
-    plt.savefig(OUTPUT_FILE, dpi=300)
-    print(f"Plot saved to {OUTPUT_FILE}")
+        # 1. Plot the Box Plot (Showing distribution: median, quartiles, range)
+        sns.boxplot(
+            data=group_df_melted,
+            x='mutations',
+            y='score',
+            order=sort_order,
+            palette='viridis',
+            width=0.6,
+            showfliers=False,
+            boxprops=dict(alpha=0.6)
+        )
+
+        # Determine output filename for this group
+        group_output = os.path.join(SCRIPT_DIR, f"fastrelax_results_{group}_plot.png")
+
+        plt.title(f'Rosetta FastRelax Results - Group {group} (Sorted by Mean Score)', fontsize=16)
+        plt.xlabel('Mutant (Mutations)', fontsize=12)
+        plt.ylabel('Rosetta Total Score (ref2015)', fontsize=12)
+        
+        # Rotate x-axis labels for better readability
+        plt.xticks(rotation=45, ha='right')
+        
+        plt.tight_layout()
+        plt.savefig(group_output, dpi=300)
+        print(f"Plot saved to {group_output}")
+        plt.show() # Display the plot interactively
+        plt.close() # Close figure to free memory
 
 if __name__ == "__main__":
     main()
+
+# %%

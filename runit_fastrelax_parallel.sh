@@ -6,8 +6,8 @@ INPUT_DIR="rosetta_minimizeenergy_results_top5"
 OUTPUT_DIR="rosetta_fastrelax_results"
 SUMMARY_FILE="rosetta_fastrelax_summary.csv"
 ROSETTA_BIN="$ROSETTA3/bin/relax.static.linuxgccrelease"
-REPLICATES=20
-PARALLEL_JOBS=20
+REPLICATES=50
+PARALLEL_JOBS=25
 
 # Create output directory and header
 mkdir -p "$OUTPUT_DIR"
