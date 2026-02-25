@@ -49,13 +49,18 @@ for pdb in "$INPUT_DIR"/*.pdb; do
     # 3. Run FastRelax replicates in parallel
     for i in $(seq 1 $REPLICATES); do
         (
-            echo "Processing: $basename (Rep $i) | Mutations: $muts"
+            log_file="$tmpdir/rep${i}.log"
             $ROSETTA_BIN \
                 -s "${pdb}.clean" \
                 -relax:fast \
+                -run:constant_seed true \
+                -run:jrand 11105 \
                 -out:path:all "$OUTPUT_DIR" \
                 -out:prefix "${basename}_rep${i}_" \
-                -overwrite > /dev/null 2>&1
+                -overwrite > "$OUTPUT_DIR/${basename}_rep${i}.log" 2>&1
+
+            seed=$(grep "random seed" "$OUTPUT_DIR/${basename}_rep${i}.log" | head -n 1 | awk '{print $NF}')
+            echo "Processing: $basename (Rep $i) | Mutations: $muts | Seed: $seed"
 
             SCORE_FILE="$OUTPUT_DIR/${basename}_rep${i}_score.sc"
             if [ -f "$SCORE_FILE" ]; then

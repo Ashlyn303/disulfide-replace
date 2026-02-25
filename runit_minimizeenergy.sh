@@ -37,13 +37,15 @@ for pdb in "$INPUT_DIR"/*.pdb; do
     grep -E "^ATOM|^TER|^END" "$pdb" > "${pdb}.clean"
     
     
-    # Run Rosetta
+    # Run Rosetta and capture output to extract seed
+    log_file="$OUTPUT_DIR/${basename}_run.log"
     $ROSETTA_BIN \
         -s "${pdb}.clean" \
         -score:weights ref2015 \
         -run:min_type lbfgs_armijo \
         -run:min_tolerance 0.0001 \
-        -run:constant_seed false \
+        -run:constant_seed true \
+        -run:jrand 11105 \
         -packing:ex1 \
         -packing:ex2 \
         -use_input_sc \
@@ -52,21 +54,23 @@ for pdb in "$INPUT_DIR"/*.pdb; do
         -out:path:all "$OUTPUT_DIR" \
         -out:prefix "${basename}_" \
         -ignore_unrecognized_res \
-        -overwrite > /dev/null 2>&1
+        -overwrite > "$OUTPUT_DIR/${basename}_rep${i}.log" 2>&1
+    
+    # Extract seed from log
+    seed=$(grep "random seed" "$OUTPUT_DIR/${basename}_rep${i}.log" | head -n 1 | awk '{print $NF}')
     
     SCORE_FILE="$OUTPUT_DIR/${basename}_score.sc"
     
-    
     if [ -f "$SCORE_FILE" ]; then
         score=$(grep "SCORE:" "$SCORE_FILE" | tail -n 1 | awk '{print $2}')
-    	echo "$basename | Mutations: $muts | Score: $score"
+    	echo "$basename | Mutations: $muts | Score: $score | Seed: $seed"
         echo "${basename},${group},${muts},${score}" >> "$SUMMARY_FILE"
     else
-    	echo "FAILED: $basename | Mutations: $muts"
+    	echo "FAILED: $basename | Mutations: $muts | Seed: $seed"
         echo "${basename},${group},${muts},FAILED" >> "$SUMMARY_FILE"
     fi
     
-    rm "${pdb}.clean"
+    rm "${pdb}.clean" "$log_file"
 done
 
 echo "------------------------------------------------"
