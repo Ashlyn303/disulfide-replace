@@ -5,6 +5,6 @@ __pycache__/
 # Ignore Rosetta results & temporary files
 results/rosetta_fastrelax_results/
 results/rosetta_minimizeenergy_results/
-rosetta_minimizeenergy_results_top5/
+results/rosetta_minimizeenergy_results_top5/
 *.pdb.clean
 *.log
