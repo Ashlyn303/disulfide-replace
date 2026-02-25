@@ -1,15 +1,21 @@
 reinitialize
-# Check for input file availability
 python
 import os
-input_pdb = "inputs/5B3N.cif"
+# Detect project root relative to current working directory
+cwd = os.getcwd()
+if cwd.endswith("scripts/pymol"):
+    project_root = os.path.dirname(os.path.dirname(cwd))
+else:
+    project_root = cwd
+
+input_pdb = os.path.join(project_root, "inputs/5B3N.cif")
 if not os.path.exists(input_pdb):
     print(f"ERROR: Input file {input_pdb} not found. Stopping.")
     quit()
-python end
 
 # Load the specific structure
-load inputs/5B3N.cif
+cmd.load(input_pdb, "5B3N")
+python end
 
 # Select disulfide Cys sidechain atoms (CB, SG)
 select ds_atoms, (resn CYS and (name CB or name SG))
