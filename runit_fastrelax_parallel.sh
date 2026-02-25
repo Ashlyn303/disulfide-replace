@@ -54,18 +54,17 @@ for pdb in "$INPUT_DIR"/*.pdb; do
                 -s "${pdb}.clean" \
                 -relax:fast \
                 -run:constant_seed true \
-                -run:jrand 11105 \
+                -run:jran 11105 \
                 -out:path:all "$OUTPUT_DIR" \
                 -out:prefix "${basename}_rep${i}_" \
-                -overwrite > "$OUTPUT_DIR/${basename}_rep${i}.log" 2>&1
+                -overwrite > "$log_file" 2>&1
 
-            seed=$(grep "random seed" "$OUTPUT_DIR/${basename}_rep${i}.log" | head -n 1 | awk '{print $NF}')
+            seed=$(grep -i "seed" "$log_file" | grep -o "[0-9]\+$" | head -n 1)
             echo "Processing: $basename (Rep $i) | Mutations: $muts | Seed: $seed"
 
             SCORE_FILE="$OUTPUT_DIR/${basename}_rep${i}_score.sc"
             if [ -f "$SCORE_FILE" ]; then
                 val=$(grep "SCORE:" "$SCORE_FILE" | tail -n 1 | awk '{print $2}')
-                echo "$val" > "$tmpdir/rep${i}.score"
             else
                 echo "FAILED" > "$tmpdir/rep${i}.score"
             fi

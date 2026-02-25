@@ -38,14 +38,14 @@ for pdb in "$INPUT_DIR"/*.pdb; do
     
     
     # Run Rosetta and capture output to extract seed
-    log_file="$OUTPUT_DIR/${basename}_run.log"
+    log_file="$OUTPUT_DIR/${basename}.log"
     $ROSETTA_BIN \
         -s "${pdb}.clean" \
         -score:weights ref2015 \
         -run:min_type lbfgs_armijo \
         -run:min_tolerance 0.0001 \
         -run:constant_seed true \
-        -run:jrand 11105 \
+        -run:jran 11105 \
         -packing:ex1 \
         -packing:ex2 \
         -use_input_sc \
@@ -54,10 +54,10 @@ for pdb in "$INPUT_DIR"/*.pdb; do
         -out:path:all "$OUTPUT_DIR" \
         -out:prefix "${basename}_" \
         -ignore_unrecognized_res \
-        -overwrite > "$OUTPUT_DIR/${basename}_rep${i}.log" 2>&1
+        -overwrite > "$log_file" 2>&1
     
     # Extract seed from log
-    seed=$(grep "random seed" "$OUTPUT_DIR/${basename}_rep${i}.log" | head -n 1 | awk '{print $NF}')
+    seed=$(grep "random seed" "$log_file" | head -n 1 | awk '{print $NF}')
     
     SCORE_FILE="$OUTPUT_DIR/${basename}_score.sc"
     
