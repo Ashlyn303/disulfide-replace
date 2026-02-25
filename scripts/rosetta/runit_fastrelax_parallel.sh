@@ -60,8 +60,8 @@ for pdb in "$INPUT_DIR"/*.pdb; do
                 -out:prefix "${basename}_rep${i}_" \
                 -overwrite > "$log_file" 2>&1
 
-            # Extract seed (highly robust search)
-            seed=$(grep -i "seed" "$log_file" | grep -oE "[0-9]{4,}" | head -n 1)
+            # Extract seed from log (specifically looking for seed=VALUE)
+            seed=$(grep -i "seed=" "$log_file" | grep -oE "seed=[0-9]+" | head -n 1 | cut -d= -f2)
             echo "Processing: $basename (Rep $i) | Mutations: $muts | Seed: $seed"
 
             SCORE_FILE="$OUTPUT_DIR/${basename}_rep${i}_score.sc"
