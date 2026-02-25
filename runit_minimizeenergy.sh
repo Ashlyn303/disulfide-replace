@@ -56,8 +56,8 @@ for pdb in "$INPUT_DIR"/*.pdb; do
         -ignore_unrecognized_res \
         -overwrite > "$log_file" 2>&1
     
-    # Extract seed from log
-    seed=$(grep "random seed" "$log_file" | head -n 1 | awk '{print $NF}')
+    # Extract seed from log (robust search)
+    seed=$(grep -i "seed" "$log_file" | grep -o "[0-9]\+$" | head -n 1)
     
     SCORE_FILE="$OUTPUT_DIR/${basename}_score.sc"
     
@@ -65,12 +65,13 @@ for pdb in "$INPUT_DIR"/*.pdb; do
         score=$(grep "SCORE:" "$SCORE_FILE" | tail -n 1 | awk '{print $2}')
     	echo "$basename | Mutations: $muts | Score: $score | Seed: $seed"
         echo "${basename},${group},${muts},${score}" >> "$SUMMARY_FILE"
+        # Log file is kept in $OUTPUT_DIR
     else
     	echo "FAILED: $basename | Mutations: $muts | Seed: $seed"
         echo "${basename},${group},${muts},FAILED" >> "$SUMMARY_FILE"
     fi
     
-    rm "${pdb}.clean" "$log_file"
+    rm "${pdb}.clean"
 done
 
 echo "------------------------------------------------"

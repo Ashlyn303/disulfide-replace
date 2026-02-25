@@ -49,7 +49,7 @@ for pdb in "$INPUT_DIR"/*.pdb; do
     # 3. Run FastRelax replicates in parallel
     for i in $(seq 1 $REPLICATES); do
         (
-            log_file="$tmpdir/rep${i}.log"
+            log_file="$OUTPUT_DIR/${basename}_rep${i}.log"
             $ROSETTA_BIN \
                 -s "${pdb}.clean" \
                 -relax:fast \
@@ -65,6 +65,7 @@ for pdb in "$INPUT_DIR"/*.pdb; do
             SCORE_FILE="$OUTPUT_DIR/${basename}_rep${i}_score.sc"
             if [ -f "$SCORE_FILE" ]; then
                 val=$(grep "SCORE:" "$SCORE_FILE" | tail -n 1 | awk '{print $2}')
+                echo "$val" > "$tmpdir/rep${i}.score"
             else
                 echo "FAILED" > "$tmpdir/rep${i}.score"
             fi
