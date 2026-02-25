@@ -2,17 +2,16 @@
 
 # Configuration
 INPUT_DIR="rosetta_minimizeenergy_results_top5"
-#INPUT_DIR="tmp"
-OUTPUT_DIR="rosetta_fastrelax_results"
-SUMMARY_FILE="rosetta_fastrelax_summary.csv"
+OUTPUT_DIR="results/rosetta_fastrelax_results"
+SUMMARY_FILE="results/tables/rosetta_fastrelax_summary.csv"
 ROSETTA_BIN="$ROSETTA3/bin/relax.static.linuxgccrelease"
 REPLICATES=20
 PARALLEL_JOBS=20
 
 # Create output directory and header
-mkdir -p "$OUTPUT_DIR"
+mkdir -p "$OUTPUT_DIR" "$(dirname "$SUMMARY_FILE")"
+LOG_DIR="$OUTPUT_DIR"
 header="filename,group,mutations"
-for i in $(seq 1 $REPLICATES); do
     header="${header},rep${i}"
 done
 header="${header},avg_score,std_score"
@@ -49,7 +48,7 @@ for pdb in "$INPUT_DIR"/*.pdb; do
     # 3. Run FastRelax replicates in parallel
     for i in $(seq 1 $REPLICATES); do
         (
-            log_file="$OUTPUT_DIR/${basename}_rep${i}.log"
+            log_file="$LOG_DIR/${basename}_rep${i}.log"
             $ROSETTA_BIN \
                 -s "${pdb}.clean" \
                 -relax:fast \

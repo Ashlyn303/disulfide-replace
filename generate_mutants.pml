@@ -11,7 +11,7 @@ g2_cys = [('CYS', '161'), ('CYS', '230')]
 g2_lim = [('LEU', '142'), ('MET', '175')]
 
 atom_map = {'CYS': 6, 'ALA': 5, 'VAL': 7, 'LEU': 8, 'ILE': 8, 'MET': 8}
-output_dir = "generated_mutants"
+output_dir = "inputs/generated_mutants"
 if not os.path.exists(output_dir): os.makedirs(output_dir)
 
 def generate_group_mutants(prefix, cys_sites, lim_sites):
@@ -22,7 +22,7 @@ def generate_group_mutants(prefix, cys_sites, lim_sites):
     for combo in all_combos:
         if sum(atom_map[res] for res in combo) <= wt_total:
             # Re-load clean structure for each mutant
-            input_pdb = "input_files/5B3N.cif"
+            input_pdb = "inputs/5B3N.cif"
             if not os.path.exists(input_pdb):
                 print(f"ERROR: Input file {input_pdb} not found. Stopping.")
                 return

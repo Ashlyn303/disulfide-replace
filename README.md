@@ -1,86 +1,56 @@
-# Disulfide Replace
+# Disulfide Replace: Generative Design of Peptides using Rosetta
 
-This project provides a workflow for identifying disulfide bonds in protein structures, finding their neighboring residues, and performing combinatorial mutations to replace the disulfide bonds with hydrophobic packing (Ala/Val) and adjusting neighbors (Leu/Ile/Met). The resulting mutants are then evaluated using Rosetta.
+**Elevator Pitch**: This repository contains the computational pipeline for the **mBG17 project**, focusing on the generative design of peptides using Rosetta. It automates the transition from sequence generation to high-resolution energy minimization and statistical stability ranking, enabling the replacement of disulfide bonds with optimized hydrophobic packing.
 
-## Technical Rationale
-
-The goal is to search within maximal heavy atom conserving and hydrophobic combinations to replace existing disulfide bonds.
-
-1.  **Neighbor Identification**: Identify disulfide neighbor Leu, Ile, Met residues that have a sidechain atom (not N, CA, C, O) within 4Å of the disulfide sidechains (CB, SG, CB, SG).
-2.  **Combinatorial Search**: Construct a search where we consider **Ala and Val** at each former Cys site, and consider **Leu, Ile, and Met** at each neighboring site that is already Leu, Ile, or Met.
-    -   Example: A local cluster of `[Leu, Cys, Met, Cys]` becomes `[LIM][AV][LIM][AV]`.
-3.  **Heavy Atom Conservation**: Within this set, only combinations that **maintain or reduce the number of heavy atoms** are legal (e.g., no double Valine mutants).
-
-## Workflow Overview
-
-The workflow consists of four main steps:
-
-1.  **Structure Preparation**: The input `5B3N.pdb` is downloaded directly from [RCSB PDB](https://www.rcsb.org/structure/5B3N).
-2.  **Neighbor Identification**: Finding residue positions near the disulfide sites.
-3.  **Combinatorial Mutagenesis**: Generating all valid mutant combinations using PyMOL.
-4.  **Rosetta Evaluation**: Scoring and relaxing the generated mutants.
-
-## Prerequisites
-
--   **PyMOL**: Required for running `.pml` scripts.
--   **Rosetta**: Required for energy minimization and FastRelax calculations. Ensure `$ROSETTA3` environment variable is set.
--   **Python 3**: For data processing within PyMOL and shell scripts.
-
-## Step-by-Step Instructions
-
-### 1. Identify Neighbors
-Run `search_within_4A.pml` in PyMOL to identify Leu, Ile, and Met residues within 4Å of the disulfide sidechains (CB, SG).
+## Quick Start
+Since Rosetta environments are complex, we provide streamlined entry points. Assuming Rosetta is installed and `$ROSETTA3` is set:
 
 ```bash
+# 1. Identify disulfide neighbors (Group 1 & 2)
 pymol -qc search_within_4A.pml
-```
 
-This identifies two groups in `5B3N`:
-- **Group 1**: Cys 24, 98 | Neighbors Leu 6, 81
-- **Group 2**: Cys 161, 230 | Neighbors Leu 142, Met 175
-
-### 2. Generate Mutants
-Run `generate_mutants.pml` to perform combinatorial mutagenesis based on the rationale above.
-
-```bash
+# 2. Generate combinatorial hydrophobic mutants
 pymol -qc generate_mutants.pml
-```
 
-This will create a `generated_mutants` folder containing the mutated `.pdb` files.
-
-### 3. Rosetta Evaluation
-Run the provided shell scripts to evaluate the mutants using Rosetta.
-
-#### Reproducibility (Seeds)
-- **Energy Minimization**: Uses a constant seed (`-run:jran 11105`) to ensure deterministic results.
-- **FastRelax**: Uses **random seeds** for each replicate to ensure diverse sampling and robust convergence.
-
-#### FastRelax
-Performs parallel FastRelax (default 20 replicates) and generates a summary CSV and plots.
-
-```bash
+# 3. High-resolution scoring and relaxation (parallel)
 ./runit_fastrelax_parallel.sh
 ```
 
-#### Energy Minimization
-Performs energy minimization on the mutants with deterministic output.
+## Reproducibility Note
+To ensure **100% reproducibility** of the results presented in our research, all energy minimization simulations were performed with a constant seed:
+> **Magic Seed: `-run:jran 11105`**
 
-```bash
-./runit_minimizeenergy.sh
-```
+This prevents stochastic variance from affecting the final mutant rankings during the initial optimization phase. Note that FastRelax replicates use random seeds to ensure diverse sampling and robust convergence.
 
-## Outputs
+## Repository Organization
 
--   **`generated_mutants/`**: Folder containing mutated PDB structures.
--   **`rosetta_fastrelax_results/`**: Rosetta FastRelax output files.
--   **`rosetta_minimizeenergy_results/`**: Rosetta minimization output files.
--   **`rosetta_fastrelax_summary.csv`**: Aggregated scores and mutation details for FastRelax.
--   **`rosetta_minimizeenergy_summary.csv`**: Aggregated scores for minimization.
+The project is structured to separate inputs, logic, and results for a professional scientific workflow:
+
+- **`inputs/`**: Source protein structures (e.g., `5B3N.cif`) and **generated mutants**.
+- **`logic/`** (Scripts):
+    - `.pml` scripts for neighbor identification and mutagenesis.
+    - `.sh` scripts for Rosetta execution (parallelized).
+    - `.py` scripts for data aggregation and visualization.
+- **`results/`**: 
+    - `figures/`: Professional plots and visualizations.
+    - `tables/`: Summary CSV files with aggregated rankings.
+    - `rosetta_fastrelax_results/`: Relaxation output and **diagnostic logs**.
+    - `rosetta_minimizeenergy_results/`: Minimization output and **diagnostic logs**.
+- **`metadata`**:
+    - `DATA.md`: Detailed data dictionary for CSV columns and REU units.
+    - `requirements.txt`: Python environment specifications.
+
+## Scientific Workflow
+
+1.  **Neighbor Identification**: Identify disulfide neighbor Leu, Ile, Met residues within 4Å of the disulfide sidechains.
+2.  **Combinatorial Search**: Construct a search considering **Ala/Val** at Cys sites and **Leu/Ile/Met** at neighboring sites.
+3.  **Hydrophobic Optimization**: Combinations are filtered to maintain or reduce total heavy atom count relative to wildtype.
+4.  **Ensemble Evaluation**: Mutants are ranked by the mean score across an ensemble of 20 FastRelax replicates.
 
 ## Software Citations
 
 ### Rosetta
-"Computational modeling and design were performed using Rosetta version 2023.45 (release a6d9ba8). Leman, J. K., et al. (2020). 'Macromolecular modeling and design in Rosetta: recent methods and frameworks.' Nature Methods, 17(7), 665-680."
+"Computational modeling and design were performed using Rosetta version 2023.45 (release a6d9ba8). Leman, J. K., et al. (2020)."
 
 ### PyMOL
 "Molecular visualizations were generated using The PyMOL Molecular Graphics System, Version 3.1.3, Schrödinger, LLC."

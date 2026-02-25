@@ -1,13 +1,12 @@
 #!/bin/bash
 
 # Configuration
-INPUT_DIR="generated_mutants"
-OUTPUT_DIR="rosetta_minimizeenergy_results"
-SUMMARY_FILE="rosetta_minimizeenergy_summary.csv"
+INPUT_DIR="inputs/generated_mutants"
+OUTPUT_DIR="results/rosetta_minimizeenergy_results"
+SUMMARY_FILE="results/tables/rosetta_minimizeenergy_summary.csv"
 ROSETTA_BIN="$ROSETTA3/bin/minimize.static.linuxgccrelease"
-
-# Create output directory and header
-mkdir -p "$OUTPUT_DIR"
+mkdir -p "$OUTPUT_DIR" "$(dirname "$SUMMARY_FILE")"
+LOG_DIR="$OUTPUT_DIR"
 echo "filename,group,mutations,total_score" > "$SUMMARY_FILE"
 
 echo "Starting Rosetta batch minimization..."
@@ -38,7 +37,7 @@ for pdb in "$INPUT_DIR"/*.pdb; do
     
     
     # Run Rosetta and capture output to extract seed
-    log_file="$OUTPUT_DIR/${basename}.log"
+    log_file="$LOG_DIR/${basename}.log"
     $ROSETTA_BIN \
         -s "${pdb}.clean" \
         -score:weights ref2015 \

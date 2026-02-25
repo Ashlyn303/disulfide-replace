@@ -8,8 +8,9 @@ import re
 
 # Configuration: Filenames relative to the script's directory
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-INPUT_FILE = os.path.join(SCRIPT_DIR, "rosetta_fastrelax_summary.csv")
-OUTPUT_FILE = os.path.join(SCRIPT_DIR, "fastrelax_results_plot.png")
+INPUT_FILE = os.path.join(SCRIPT_DIR, "results", "tables", "rosetta_fastrelax_summary.csv")
+OUTPUT_DIR = os.path.join(SCRIPT_DIR, "results", "figures")
+os.makedirs(OUTPUT_DIR, exist_ok=True)
 
 AA_MAP = {
     'ALA': 'A', 'CYS': 'C', 'ASP': 'D', 'GLU': 'E', 'PHE': 'F',
@@ -186,7 +187,7 @@ def main():
             print(f"{mut_label:50} | Mean: {avg:8.2f} | Median: {med:8.2f}")
 
         # Determine output filename for this group
-        group_output = os.path.join(SCRIPT_DIR, f"fastrelax_results_{group}_plot.png")
+        group_output = os.path.join(OUTPUT_DIR, f"fastrelax_results_{group}_plot.png")
 
         # plt.title(f'Rosetta FastRelax Results - Group {group} (Sorted by Mean Score)')
         plt.xlabel('Mutantations')

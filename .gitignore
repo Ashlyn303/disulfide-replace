@@ -1,3 +1,9 @@
 # --- Python & System Junk ---
 __pycache__/
 .DS_Store
+
+# Ignore Rosetta results & temporary files
+results/rosetta_fastrelax_results/
+results/rosetta_minimizeenergy_results/
+*.pdb.clean
+*.log
