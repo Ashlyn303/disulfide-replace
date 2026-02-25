@@ -15,6 +15,7 @@ PARALLEL_JOBS=20
 mkdir -p "$OUTPUT_DIR" "$(dirname "$SUMMARY_FILE")"
 LOG_DIR="$OUTPUT_DIR"
 header="filename,group,mutations"
+for i in $(seq 1 $REPLICATES); do
     header="${header},rep${i}"
 done
 header="${header},avg_score,std_score"
