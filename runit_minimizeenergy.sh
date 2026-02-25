@@ -40,8 +40,18 @@ for pdb in "$INPUT_DIR"/*.pdb; do
     # Run Rosetta
     $ROSETTA_BIN \
         -s "${pdb}.clean" \
+        -score:weights ref2015 \
+        -run:min_type lbfgs_armijo \
+        -run:min_tolerance 0.0001 \
+        -run:constant_seed false \
+        -packing:ex1 \
+        -packing:ex2 \
+        -use_input_sc \
+        -flip_HNQ \
+        -no_optH false \
         -out:path:all "$OUTPUT_DIR" \
         -out:prefix "${basename}_" \
+        -ignore_unrecognized_res \
         -overwrite > /dev/null 2>&1
     
     SCORE_FILE="$OUTPUT_DIR/${basename}_score.sc"
