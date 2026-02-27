@@ -21,16 +21,19 @@ OUTPUT_PLOT = os.path.join(FIGURES_DIR, "fastrelax_bootstrap_comparison.png")
 
 os.makedirs(FIGURES_DIR, exist_ok=True)
 
-def bootstrap_stats(data, n_bootstrap=1000, ci=0.95):
+def bootstrap_stats(data, n_bootstrap=1000, ci=0.95, sample_size=None):
     """Perform bootstrap resampling to estimate mean, std, and CI."""
     data = np.array(data)
     data = data[~np.isnan(data)] # Remove NaNs
     if len(data) == 0:
         return np.nan, np.nan, np.nan, np.nan
     
+    if sample_size is None:
+        sample_size = len(data)
+    
     boot_means = []
     for _ in range(n_bootstrap):
-        resample = np.random.choice(data, size=len(data), replace=True)
+        resample = np.random.choice(data, size=sample_size, replace=True)
         boot_means.append(np.mean(resample))
     
     boot_mean = np.mean(boot_means)
@@ -79,7 +82,7 @@ def main():
         all_reps = group_data[rep_cols].values.flatten()
         all_reps = pd.to_numeric(all_reps, errors='coerce')
         
-        b_mean, b_std, b_lower, b_upper = bootstrap_stats(all_reps)
+        b_mean, b_std, b_lower, b_upper = bootstrap_stats(all_reps, sample_size=20)
         orig_mean = np.nanmean(all_reps)
         orig_std = np.nanstd(all_reps)
         
@@ -112,13 +115,6 @@ def main():
         for _, row in group_results.iterrows():
             mean_std = f"{row['original_mean']:8.2f} ± {row['original_std']:5.2f}"
             print(f"{row['name']:<25} | {mean_std:>15} | {row['ci_lower']:15.2f} | {row['ci_upper']:15.2f} | {int(row['n_samples']):>5}")
-
-    # Plotting (Disabled per user request)
-    # plt.figure(figsize=(12, 8))
-    # sns.set_style("whitegrid")
-    # ... (code truncated for brevity)
-    # plt.savefig(OUTPUT_PLOT, dpi=300)
-    # print(f"Comparison plot saved to {OUTPUT_PLOT}")
 
 if __name__ == "__main__":
     main()

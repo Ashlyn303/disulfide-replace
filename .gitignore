@@ -8,3 +8,4 @@ results/rosetta_minimizeenergy_results/
 results/rosetta_minimizeenergy_results_top5/
 *.pdb.clean
 *.log
+*.svg

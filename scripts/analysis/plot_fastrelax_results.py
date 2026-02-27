@@ -208,8 +208,9 @@ def main():
             med = row['median']
             print(f"{mut_label:50} | Mean: {avg:8.2f} | Median: {med:8.2f}")
 
-        # Determine output filename for this group
-        group_output = os.path.join(OUTPUT_DIR, f"fastrelax_results_{group}_plot.png")
+        # Determine output filenames for this group
+        group_output_png = os.path.join(OUTPUT_DIR, f"fastrelax_results_{group}_plot.png")
+        group_output_svg = os.path.join(OUTPUT_DIR, f"fastrelax_results_{group}_plot.svg")
 
         # plt.title(f'Rosetta FastRelax Results - Group {group} (Sorted by Mean Score)')
         plt.xlabel('Mutantations')
@@ -226,8 +227,9 @@ def main():
         plt.xticks(rotation=45, ha='right', fontsize=14)
         
         plt.tight_layout()
-        plt.savefig(group_output, dpi=300, bbox_inches='tight')
-        print(f"Plot saved to {group_output}")
+        plt.savefig(group_output_png, dpi=300, bbox_inches='tight')
+        plt.savefig(group_output_svg, bbox_inches='tight')
+        print(f"Plots saved to {group_output_png} and {group_output_svg}")
         # plt.show() # Disabled for non-interactive background run
         plt.close() # Close figure to free memory
 
