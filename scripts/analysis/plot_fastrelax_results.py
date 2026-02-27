@@ -10,7 +10,7 @@ import re
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 # New: Handle nested directory structure in scripts/analysis/
 PROJECT_ROOT = os.path.dirname(os.path.dirname(SCRIPT_DIR))
-INPUT_FILE = os.path.join(PROJECT_ROOT, "results", "tables", "rosetta_fastrelax_summary.csv")
+INPUT_FILE = os.path.join(PROJECT_ROOT, "results", "tables", "rosetta_fastrelax_summary-1.csv")
 OUTPUT_DIR = os.path.join(PROJECT_ROOT, "results", "figures")
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
