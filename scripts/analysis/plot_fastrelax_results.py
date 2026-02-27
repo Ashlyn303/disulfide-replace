@@ -10,7 +10,16 @@ import re
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 # New: Handle nested directory structure in scripts/analysis/
 PROJECT_ROOT = os.path.dirname(os.path.dirname(SCRIPT_DIR))
-INPUT_FILE = os.path.join(PROJECT_ROOT, "results", "tables", "rosetta_fastrelax_summary-1.csv")
+INPUT_FILES = [
+    os.path.join(PROJECT_ROOT, "results", "tables", "rosetta_fastrelax_summary-1.csv"),
+    os.path.join(PROJECT_ROOT, "results", "tables", "rosetta_fastrelax_summary-2.csv"),
+    os.path.join(PROJECT_ROOT, "results", "tables", "rosetta_fastrelax_summary-3.csv")
+]
+GROUP_COLORS = {
+    'G1': '#89CFF0', # Baby Blue (More vibrant than before)
+    'G2': '#77DD77', # Pastel Green
+    'G3': '#FFB347'  # Pastel Orange (if needed)
+}
 OUTPUT_DIR = os.path.join(PROJECT_ROOT, "results", "figures")
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
@@ -101,12 +110,20 @@ def set_plot_style(small_size=18, medium_size=22, large_size=26,
 def main():
     set_plot_style() # Apply custom styling
     
-    if not os.path.exists(INPUT_FILE):
-        print(f"Error: {INPUT_FILE} not found.")
+    all_data = []
+    for f in INPUT_FILES:
+        if os.path.exists(f):
+            print(f"Loading {f}...")
+            all_data.append(pd.read_csv(f))
+        else:
+            print(f"Warning: {f} not found.")
+            
+    if not all_data:
+        print("Error: No input files found.")
         return
 
-    # Load data
-    df = pd.read_csv(INPUT_FILE)
+    # Combine all data
+    df = pd.concat(all_data, ignore_index=True)
     
     # Filter out FAILED rows
     df = df[df['avg_score'] != 'FAILED'].copy()
@@ -154,17 +171,18 @@ def main():
             x='plot_label',
             y='score',
             order=sort_order,
-            palette='viridis',
+            color=GROUP_COLORS.get(group, 'lightgrey'),
             width=0.4, # More compact boxes
             showfliers=False,
-            showmeans=True,
-            meanline=True,
-            meanprops={'color': 'red', 'ls': '--', 'lw': 1.5}, # Red dashed line for mean
-            medianprops={'color': 'blue', 'lw': 2},          # Blue solid line for median
+            showmeans=False,
+            # meanline=True,
+            # meanprops={'color': 'red', 'ls': '--', 'lw': 1.5}, # Red dashed line for mean
+            medianprops={'color': 'black', 'lw': 1},          # Black solid line for median
             boxprops=dict(alpha=0.6)
         )
 
-        # 2. Overlay individual data points (Strip plot)
+        # 2. Overlay individual data points (Strip plot) - Disabled per user request
+        """
         sns.stripplot(
             data=group_df_melted,
             x='plot_label',
@@ -175,17 +193,19 @@ def main():
             jitter=True,
             alpha=0.4
         )
+        """
 
         # 3. Add terminal output for numerical mean and median
         print(f"\n--- Statistics for Group {group} ---")
-        # We still use the original 'mutations' for the print table for clarity if needed, 
-        # or we can use the new plot_label. Let's stick to the combined label for consistency.
-        for i, row in group_df.iterrows():
+        # Aggregate stats by plot_label to avoid duplicates from multiple files
+        stats_df = group_df_melted.groupby('plot_label')['score'].agg(['mean', 'median']).reset_index()
+        # Sort by mean for the printout as well
+        stats_df = stats_df.sort_values('mean')
+        
+        for _, row in stats_df.iterrows():
             mut_label = row['plot_label'].replace('\n', ' ')
-            avg = row['avg_score']
-            # Re-calculate median from melted if needed, or just use avg for simple table
-            mut_data = group_df_melted[group_df_melted['plot_label'] == row['plot_label']]['score'].dropna()
-            med = mut_data.median()
+            avg = row['mean']
+            med = row['median']
             print(f"{mut_label:50} | Mean: {avg:8.2f} | Median: {med:8.2f}")
 
         # Determine output filename for this group
@@ -196,19 +216,19 @@ def main():
         plt.ylabel('REU')
         plt.ylim(-780, -755)
         
-        # Add a custom legend for mean/median lines
-        from matplotlib.lines import Line2D
-        custom_lines = [Line2D([0], [0], color='red', lw=2, ls='--'),
-                        Line2D([0], [0], color='blue', lw=2)]
-        plt.legend(custom_lines, ['Mean', 'Median'], loc='lower right')
+        # Add a custom legend for mean/median lines - Disabled per user request
+        # from matplotlib.lines import Line2D
+        # custom_lines = [Line2D([0], [0], color='red', lw=2, ls='--'),
+        #                 Line2D([0], [0], color='blue', lw=2)]
+        # plt.legend(custom_lines, ['Mean', 'Median'], loc='lower right')
 
         # Rotate x-axis labels for better readability
         plt.xticks(rotation=45, ha='right', fontsize=14)
         
         plt.tight_layout()
-        plt.savefig(group_output, dpi=300)
+        plt.savefig(group_output, dpi=300, bbox_inches='tight')
         print(f"Plot saved to {group_output}")
-        plt.show() # Display the plot interactively
+        # plt.show() # Disabled for non-interactive background run
         plt.close() # Close figure to free memory
 
 if __name__ == "__main__":
