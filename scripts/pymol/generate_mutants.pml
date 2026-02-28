@@ -11,19 +11,23 @@ else:
     project_root = cwd
 
 # Define Groups
-g1_cys = [('CYS', '24'), ('CYS', '98')]
-g1_lim = [('LEU', '6'), ('LEU', '81')]
+g1_cys = [('A', 'CYS', '24'), ('A', 'CYS', '98')]
+g1_lim = [('A', 'LEU', '6'), ('A', 'LEU', '81')]
 
-g2_cys = [('CYS', '161'), ('CYS', '230')]
-g2_lim = [('LEU', '142'), ('MET', '175')]
+g2_cys = [('A', 'CYS', '161'), ('A', 'CYS', '230')]
+g2_lim = [('A', 'LEU', '142'), ('A', 'MET', '175')]
 
 atom_map = {'CYS': 6, 'ALA': 5, 'VAL': 7, 'LEU': 8, 'ILE': 8, 'MET': 8}
 output_dir = os.path.join(project_root, "inputs/generated_mutants")
 if not os.path.exists(output_dir): os.makedirs(output_dir)
 
 def generate_group_mutants(prefix, cys_sites, lim_sites):
-    wt_total = sum(atom_map[s[0]] for s in cys_sites + lim_sites)
-    all_combos = list(itertools.product(['LEU', 'ILE', 'MET'], ['LEU', 'ILE', 'MET'], ['ALA', 'VAL'], ['ALA', 'VAL']))
+    wt_total = sum(atom_map[s[1]] for s in cys_sites + lim_sites)
+    
+    # LIM sites mutate to L/I/M, CYS sites mutate to A/V
+    lim_options = [['LEU', 'ILE', 'MET']] * len(lim_sites)
+    cys_options = [['ALA', 'VAL']] * len(cys_sites)
+    all_combos = list(itertools.product(*(lim_options + cys_options)))
     
     count = 0
     for combo in all_combos:
@@ -36,16 +40,12 @@ def generate_group_mutants(prefix, cys_sites, lim_sites):
             cmd.load(input_pdb, "temp_mutant")
             wizard = cmd.get_wizard()
             
-            # Apply 4 mutations (2 LIM, 2 CYS)
-            mutations = [
-                (lim_sites[0][1], combo[0]), (lim_sites[1][1], combo[1]),
-                (cys_sites[0][1], combo[2]), (cys_sites[1][1], combo[3])
-            ]
-            
-            for resi, resn in mutations:
+            # Apply mutations to all identified sites
+            all_sites = lim_sites + cys_sites
+            for (chain, resn, resi), new_resn in zip(all_sites, combo):
                 cmd.wizard("mutagenesis")
-                cmd.get_wizard().set_mode(resn)
-                cmd.get_wizard().do_select(f"resi {resi}")
+                cmd.get_wizard().set_mode(new_resn)
+                cmd.get_wizard().do_select(f"chain {chain} and resi {resi}")
                 cmd.get_wizard().apply()
             
             filename = f"{output_dir}/{prefix}_mutant_{count:03d}.pdb"

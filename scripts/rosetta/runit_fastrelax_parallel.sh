@@ -7,9 +7,44 @@ PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 INPUT_DIR="$PROJECT_ROOT/results/rosetta_minimizeenergy_results_top5"
 OUTPUT_DIR="$PROJECT_ROOT/results/rosetta_fastrelax_results"
 SUMMARY_FILE="$PROJECT_ROOT/results/tables/rosetta_fastrelax_summary.csv"
+ORIGINAL_STRUCT="$PROJECT_ROOT/inputs/5B3N.cif" # Specify either .cif or .pdb path
+if [[ "$ORIGINAL_STRUCT" == *.cif ]]; then
+    ORIGINAL_FORMAT="CIF"
+elif [[ "$ORIGINAL_STRUCT" == *.pdb ]]; then
+    ORIGINAL_FORMAT="PDB"
+else
+    echo "ERROR: Original structure format not recognized (must be .cif or .pdb): $ORIGINAL_STRUCT"
+    exit 1
+fi
 ROSETTA_BIN="$ROSETTA3/bin/relax.static.linuxgccrelease"
 REPLICATES=20
 PARALLEL_JOBS=20
+
+# --- Group Definitions (Paste EXACTLY from PyMOL Script) ---
+PYTHON_GROUPS=$(cat <<EOF
+g1_cys = [('A', 'CYS', '24'), ('A', 'CYS', '98')]
+g1_lim = [('A', 'LEU', '6'), ('A', 'LEU', '81')]
+
+g2_cys = [('A', 'CYS', '161'), ('A', 'CYS', '230')]
+g2_lim = [('A', 'LEU', '142'), ('A', 'MET', '175')]
+EOF
+)
+# ---------------------------------------------------------
+
+# Process Python definitions into Shell variables
+eval "$(python3 -c "
+import ast
+data = {}
+exec(\"\"\"$PYTHON_GROUPS\"\"\", {}, data)
+def export_group(prefix, lim, cys):
+    all_sites = lim + cys
+    print(f'{prefix}_COUNT={len(all_sites)}')
+    for i, (ch, resn, idx) in enumerate(all_sites, 1):
+        print(f'{prefix}_S{i}_CH=\"{ch}\"')
+        print(f'{prefix}_S{i}_IDX={idx}')
+export_group('G1', data['g1_lim'], data['g1_cys'])
+export_group('G2', data['g2_lim'], data['g2_cys'])
+")"
 
 # Create output directory and header
 mkdir -p "$OUTPUT_DIR" "$(dirname "$SUMMARY_FILE")"
@@ -29,20 +64,32 @@ for pdb in "$INPUT_DIR"/*.pdb; do
 
     # 1. Identify Group and extract mutations directly from PDB
     if [[ "$basename" == G1* ]]; then
-        group="G1"
-        m1=$(awk '$6 == 6 {print $4; exit}' "$pdb")
-        m2=$(awk '$6 == 81 {print $4; exit}' "$pdb")
-        m3=$(awk '$6 == 24 {print $4; exit}' "$pdb")
-        m4=$(awk '$6 == 98 {print $4; exit}' "$pdb")
-        muts="L6${m1}-L81${m2}-C24${m3}-C98${m4}"
+        group="G1"; count=$G1_COUNT
     else
-        group="G2"
-        m1=$(awk '$6 == 142 {print $4; exit}' "$pdb")
-        m2=$(awk '$6 == 175 {print $4; exit}' "$pdb")
-        m3=$(awk '$6 == 161 {print $4; exit}' "$pdb")
-        m4=$(awk '$6 == 230 {print $4; exit}' "$pdb")
-        muts="L142${m1}-M175${m2}-C161${m3}-C230${m4}"
+        group="G2"; count=$G2_COUNT
     fi
+
+    muts=""
+    for i in $(seq 1 $count); do
+        ch_v="${group}_S${i}_CH";   ch="${!ch_v}"
+        idx_v="${group}_S${i}_IDX"; idx="${!idx_v}"
+        
+        # Extract WT from Original Structure
+        if [ "$ORIGINAL_FORMAT" == "CIF" ]; then
+            # CIF: Field 6 is ResName, 7 is Chain, 9 is ResSeq
+            wt_3=$(awk -v ch="$ch" -v idx="$idx" '$1=="ATOM" && $7==ch && $9==idx {print $6; exit}' "$ORIGINAL_STRUCT")
+        elif [ "$ORIGINAL_FORMAT" == "PDB" ]; then
+            # PDB: Robust fixed-column substr
+            wt_3=$(awk -v ch="$ch" -v idx="$idx" '/^ATOM/ && substr($0, 22, 1) == ch && substr($0, 23, 4)+0 == idx {print substr($0, 18, 3); exit}' "$ORIGINAL_STRUCT")
+        fi
+        wt="${wt_3:0:1}" # Use first letter
+        
+        # Extract Mutant from PDB (Robust fixed-column substr)
+        m=$(awk -v ch="$ch" -v idx="$idx" '/^ATOM/ && substr($0, 22, 1) == ch && substr($0, 23, 4)+0 == idx {print substr($0, 18, 3); exit}' "$pdb")
+        
+        [ -n "$muts" ] && muts="${muts}-"
+        muts="${muts}${wt}${idx}${m}"
+    done
 
     # 2. Clean PDB
     grep -E "^ATOM|^TER|^END" "$pdb" > "${pdb}.clean"
