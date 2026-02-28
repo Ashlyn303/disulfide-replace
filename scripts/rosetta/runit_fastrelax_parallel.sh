@@ -56,13 +56,15 @@ for pdb in "$INPUT_DIR"/*.pdb; do
             $ROSETTA_BIN \
                 -s "${pdb}.clean" \
                 -relax:fast \
+                -score:weights ref2015 \
                 -run:constant_seed false \
                 -out:path:all "$OUTPUT_DIR" \
                 -out:prefix "${basename}_rep${i}_" \
                 -overwrite > "$log_file" 2>&1
 
             # Extract seed from log (specifically looking for seed=VALUE)
-            seed=$(grep -i "seed=" "$log_file" | grep -oE "seed=[0-9]+" | head -n 1 | cut -d= -f2)
+            sync
+            seed=$(grep -ai "seed=" "$log_file" | grep -oE "seed=[-]?[0-9]+" | head -n 1 | cut -d= -f2)
             echo "Processing: $basename (Rep $i) | Mutations: $muts | Seed: $seed"
 
             SCORE_FILE="$OUTPUT_DIR/${basename}_rep${i}_score.sc"
