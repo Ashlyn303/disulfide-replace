@@ -8,6 +8,28 @@ INPUT_DIR="$PROJECT_ROOT/results/rosetta_minimizeenergy_results_top5"
 OUTPUT_DIR="$PROJECT_ROOT/results/rosetta_fastrelax_results"
 SUMMARY_FILE="$PROJECT_ROOT/results/tables/rosetta_fastrelax_summary.csv"
 ORIGINAL_STRUCT="$PROJECT_ROOT/inputs/5B3N.cif" # Specify either .cif or .pdb path
+ROSETTA_BIN="$ROSETTA3/bin/relax.static.linuxgccrelease"
+REPLICATES=20
+PARALLEL_JOBS=20
+
+# --- Group Definitions (Paste EXACTLY from PyMOL Script) ---
+MUTATION_GROUPS=$(cat <<EOF
+Groups = [
+    {
+        'id': 'G1',
+        'cys': [('A', 'CYS', '24'), ('A', 'CYS', '98')],
+        'lim': [('A', 'LEU', '6'), ('A', 'LEU', '81')]
+    },
+    {
+        'id': 'G2',
+        'cys': [('A', 'CYS', '161'), ('A', 'CYS', '230')],
+        'lim': [('A', 'LEU', '142'), ('A', 'MET', '175')]
+    }
+]
+EOF
+)
+# ---------------------------------------------------------
+
 if [[ "$ORIGINAL_STRUCT" == *.cif ]]; then
     ORIGINAL_FORMAT="CIF"
 elif [[ "$ORIGINAL_STRUCT" == *.pdb ]]; then
@@ -16,34 +38,35 @@ else
     echo "ERROR: Original structure format not recognized (must be .cif or .pdb): $ORIGINAL_STRUCT"
     exit 1
 fi
-ROSETTA_BIN="$ROSETTA3/bin/relax.static.linuxgccrelease"
-REPLICATES=20
-PARALLEL_JOBS=20
-
-# --- Group Definitions (Paste EXACTLY from PyMOL Script) ---
-PYTHON_GROUPS=$(cat <<EOF
-g1_cys = [('A', 'CYS', '24'), ('A', 'CYS', '98')]
-g1_lim = [('A', 'LEU', '6'), ('A', 'LEU', '81')]
-
-g2_cys = [('A', 'CYS', '161'), ('A', 'CYS', '230')]
-g2_lim = [('A', 'LEU', '142'), ('A', 'MET', '175')]
-EOF
-)
-# ---------------------------------------------------------
 
 # Process Python definitions into Shell variables
 eval "$(python3 -c "
-import ast
+import ast, sys
 data = {}
-exec(\"\"\"$PYTHON_GROUPS\"\"\", {}, data)
-def export_group(prefix, lim, cys):
-    all_sites = lim + cys
-    print(f'{prefix}_COUNT={len(all_sites)}')
-    for i, (ch, resn, idx) in enumerate(all_sites, 1):
-        print(f'{prefix}_S{i}_CH=\"{ch}\"')
-        print(f'{prefix}_S{i}_IDX={idx}')
-export_group('G1', data['g1_lim'], data['g1_cys'])
-export_group('G2', data['g2_lim'], data['g2_cys'])
+try:
+    exec(\"\"\"$MUTATION_GROUPS\"\"\", {}, data)
+    g_key = 'Groups' if 'Groups' in data else 'groups'
+    if g_key not in data:
+        raise KeyError('Neither \"Groups\" nor \"groups\" found in MUTATION_GROUPS')
+    
+    groups_list = []
+    for G in data[g_key]:
+        prefix = G['id']
+        groups_list.append(prefix)
+        all_sites = G['lim'] + G['cys']
+        print(f'{prefix}_COUNT={len(all_sites)}')
+        for i, (ch, res_n, idx) in enumerate(all_sites, 1):
+            print(f'{prefix}_S{i}_CH=\"{ch}\"')
+            print(f'{prefix}_S{i}_IDX={idx}')
+    
+    # Safe join for bash evaluation
+    groups_str = ' '.join(groups_list)
+    print(f'ALL_GROUP_IDS=\"{groups_str}\"')
+except Exception as e:
+    # Use standard formatting to avoid f-string quoting issues
+    sys.stderr.write('ERROR in MUTATION_GROUPS parsing: {}\\n'.format(e))
+    # Print exit 1 so bash script stops
+    print('exit 1')
 ")"
 
 # Create output directory and header
@@ -63,11 +86,21 @@ for pdb in "$INPUT_DIR"/*.pdb; do
     basename=$(basename "$pdb" .pdb)
 
     # 1. Identify Group and extract mutations directly from PDB
-    if [[ "$basename" == G1* ]]; then
-        group="G1"; count=$G1_COUNT
-    else
-        group="G2"; count=$G2_COUNT
+    group=""
+    # Use underscore matching to prevent G1 matching G10
+    for g_id in $ALL_GROUP_IDS; do
+        if [[ "$basename" == ${g_id}_* ]]; then
+            group="$g_id"; break
+        fi
+    done
+
+    if [ -z "$group" ]; then
+        echo "WARNING: Skipping $basename - does not match any group prefix with underscore (e.g., G1_). Current ALL_GROUP_IDS: '$ALL_GROUP_IDS'" >&2
+        continue
     fi
+
+    count_var="${group}_COUNT"
+    count=${!count_var}
 
     muts=""
     for i in $(seq 1 $count); do
@@ -85,7 +118,8 @@ for pdb in "$INPUT_DIR"/*.pdb; do
         wt="${wt_3:0:1}" # Use first letter
         
         # Extract Mutant from PDB (Robust fixed-column substr)
-        m=$(awk -v ch="$ch" -v idx="$idx" '/^ATOM/ && substr($0, 22, 1) == ch && substr($0, 23, 4)+0 == idx {print substr($0, 18, 3); exit}' "$pdb")
+        m_3=$(awk -v ch="$ch" -v idx="$idx" '/^ATOM/ && substr($0, 22, 1) == ch && substr($0, 23, 4)+0 == idx {print substr($0, 18, 3); exit}' "$pdb")
+        m="${m_3:0:1}" # Use first letter
         
         [ -n "$muts" ] && muts="${muts}-"
         muts="${muts}${wt}${idx}${m}"

@@ -10,12 +10,19 @@ if cwd.endswith("scripts/pymol"):
 else:
     project_root = cwd
 
-# Define Groups
-g1_cys = [('A', 'CYS', '24'), ('A', 'CYS', '98')]
-g1_lim = [('A', 'LEU', '6'), ('A', 'LEU', '81')]
-
-g2_cys = [('A', 'CYS', '161'), ('A', 'CYS', '230')]
-g2_lim = [('A', 'LEU', '142'), ('A', 'MET', '175')]
+# Define Groups (Copy/Paste from search_within_4A.pml)
+Groups = [
+    {
+        'id': 'G1',
+        'cys': [('A', 'CYS', '24'), ('A', 'CYS', '98')],
+        'lim': [('A', 'LEU', '6'), ('A', 'LEU', '81')]
+    },
+    {
+        'id': 'G2',
+        'cys': [('A', 'CYS', '161'), ('A', 'CYS', '230')],
+        'lim': [('A', 'LEU', '142'), ('A', 'MET', '175')]
+    }
+]
 
 atom_map = {'CYS': 6, 'ALA': 5, 'VAL': 7, 'LEU': 8, 'ILE': 8, 'MET': 8}
 output_dir = os.path.join(project_root, "inputs/generated_mutants")
@@ -55,7 +62,7 @@ def generate_group_mutants(prefix, cys_sites, lim_sites):
             count += 1
     print(f"Generated {count} mutants for {prefix}")
 
-# Run for both groups independently
-generate_group_mutants("G1", g1_cys, g1_lim)
-generate_group_mutants("G2", g2_cys, g2_lim)
+# Run for all defined Groups
+for g in Groups:
+    generate_group_mutants(g['id'], g['cys'], g['lim'])
 python end

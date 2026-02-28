@@ -17,24 +17,56 @@ if not os.path.exists(input_pdb):
 cmd.load(input_pdb, "5B3N")
 python end
 
-# Select disulfide Cys sidechain atoms (CB, SG)
-select ds_atoms, (resn CYS and (name CB or name SG))
-
-# Find L, I, M neighbors with sidechain atoms within 4A of disulfide sidechains
-# Excludes backbone N, CA, C, O
-select near_lim, (byres (resn LEU+ILE+MET and not (name N+CA+C+O)) within 4 of ds_atoms)
-
-# Print specific residue info for the combinatorial script
+# Identify Disulfide Pairs and Neighbors
 python
 from pymol import stored
-stored.lim_info = []
-stored.cys_info = []
+import itertools
 
-# Collect (Chain, Name, Index) for neighbors and disulfides
-cmd.iterate("(near_lim and name CA)", "stored.lim_info.append((chain, resn, resi))")
-cmd.iterate("(resn CYS and name CA)", "stored.cys_info.append((chain, resn, resi))")
+# 1. Get all CYS SG atoms
+stored.sg_atoms = []
+cmd.iterate("resn CYS and name SG", "stored.sg_atoms.append((chain, resi, index))")
 
-print("\n--- Identified Residues ---")
-print("LIM Neighbors:", stored.lim_info)
-print("Cys Sites:", stored.cys_info)
+# 2. Find pairs within 2.5A
+disulfide_pairs = []
+for i in range(len(stored.sg_atoms)):
+    for j in range(i + 1, len(stored.sg_atoms)):
+        at1 = stored.sg_atoms[i]
+        at2 = stored.sg_atoms[j]
+        # Use cmd.get_distance for accuracy
+        dist = cmd.get_distance(f"index {at1[2]}", f"index {at2[2]}")
+        if dist < 2.5:
+            disulfide_pairs.append((at1, at2))
+
+# 3. For each pair, find neighbors and build group
+groups = []
+for idx, (at1, at2) in enumerate(disulfide_pairs, 1):
+    cys_residues = []
+    # Get full residue info (chain, resn, resi) for the two CYS
+    cmd.iterate(f"index {at1[2]} or index {at2[2]}", "cys_residues.append((chain, resn, resi))")
+    
+    # Selection for this specific pair's neighbors
+    pair_sel = f"index {at1[2]} or index {at2[2]}"
+    neighbor_sel = f"(byres (resn LEU+ILE+MET and not (name N+CA+C+O)) within 4 of ({pair_sel})) and name CA"
+    
+    lim_neighbors = []
+    cmd.iterate(neighbor_sel, "lim_neighbors.append((chain, resn, resi))")
+    
+    groups.append({
+        'id': f'G{idx}',
+        'cys': list(set(cys_residues)), # Unique residues
+        'lim': list(set(lim_neighbors))
+    })
+
+# 4. Print structured output
+print("\n# --- Identified Residues (Copy/Paste this block) ---")
+print("Groups = [")
+for i, g in enumerate(groups):
+    comma = "," if i < len(groups) - 1 else ""
+    print("    {")
+    print(f"        'id': '{g['id']}',")
+    print(f"        'cys': {g['cys']},")
+    print(f"        'lim': {g['lim']}")
+    print(f"    }}{comma}")
+print("]")
+print("# --------------------------------------------------")
 python end
