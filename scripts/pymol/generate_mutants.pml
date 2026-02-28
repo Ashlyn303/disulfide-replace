@@ -37,6 +37,7 @@ def generate_group_mutants(prefix, cys_sites, lim_sites):
             if not os.path.exists(input_pdb):
                 print(f"ERROR: Input file {input_pdb} not found. Stopping.")
                 return
+            cmd.delete("temp_mutant")
             cmd.load(input_pdb, "temp_mutant")
             wizard = cmd.get_wizard()
             
@@ -45,7 +46,7 @@ def generate_group_mutants(prefix, cys_sites, lim_sites):
             for (chain, resn, resi), new_resn in zip(all_sites, combo):
                 cmd.wizard("mutagenesis")
                 cmd.get_wizard().set_mode(new_resn)
-                cmd.get_wizard().do_select(f"chain {chain} and resi {resi}")
+                cmd.get_wizard().do_select(f"/temp_mutant//{chain}/{resi}")
                 cmd.get_wizard().apply()
             
             filename = f"{output_dir}/{prefix}_mutant_{count:03d}.pdb"
