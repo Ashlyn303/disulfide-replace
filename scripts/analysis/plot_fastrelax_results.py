@@ -213,7 +213,7 @@ def main():
         group_output_svg = os.path.join(OUTPUT_DIR, f"fastrelax_results_{group}_plot.svg")
 
         # plt.title(f'Rosetta FastRelax Results - Group {group} (Sorted by Mean Score)')
-        plt.xlabel('Mutantations')
+        plt.xlabel('Mutations')
         plt.ylabel('REU')
         plt.ylim(-780, -755)
         
