@@ -1,6 +1,6 @@
 # Disulfide Replace: Generative Design of Peptides using Rosetta
 
-**Elevator Pitch**: This repository contains the computational pipeline for the **mBG17 project**, focusing on the generative design of peptides using Rosetta. It automates the transition from sequence generation to high-resolution energy minimization and statistical stability ranking, enabling the replacement of disulfide bonds with optimized hydrophobic packing.
+**Elevator Pitch**: This repository contains the computational pipeline for the **Anti-HIV scFv project**, focusing on the generative design of peptides using Rosetta. It automates the transition from sequence generation to high-resolution energy minimization and statistical stability ranking, enabling the replacement of disulfide bonds with optimized hydrophobic packing.
 
 ## Quick Start
 Since Rosetta environments are complex, we provide streamlined entry points. Assuming Rosetta is installed and `$ROSETTA3` is set:
