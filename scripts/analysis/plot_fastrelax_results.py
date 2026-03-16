@@ -173,7 +173,7 @@ def main():
             order=sort_order,
             color=GROUP_COLORS.get(group, 'lightgrey'),
             width=0.4, # More compact boxes
-            showfliers=False,
+            showfliers=True, # Show outliers
             showmeans=False,
             # meanline=True,
             # meanprops={'color': 'red', 'ls': '--', 'lw': 1.5}, # Red dashed line for mean
@@ -181,7 +181,8 @@ def main():
             boxprops=dict(alpha=0.6)
         )
 
-        # 2. Overlay individual data points (Strip plot)
+        # 2. Overlay individual data points (Strip plot) - Disabled per user request
+        """
         sns.stripplot(
             data=group_df_melted,
             x='plot_label',
@@ -192,6 +193,7 @@ def main():
             jitter=True,
             alpha=0.4
         )
+        """
 
         # 3. Add terminal output for numerical mean and median
         print(f"\n--- Statistics for Group {group} ---")
