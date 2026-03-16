@@ -209,8 +209,8 @@ def main():
             print(f"{mut_label:50} | Mean: {avg:8.2f} | Median: {med:8.2f}")
 
         # Determine output filenames for this group
-        group_output_png = os.path.join(OUTPUT_DIR, f"fastrelax_results_{group}_plot.png")
-        group_output_svg = os.path.join(OUTPUT_DIR, f"fastrelax_results_{group}_plot.svg")
+        group_output_png = os.path.join(OUTPUT_DIR, f"fastrelax_{group}_scores.png")
+        group_output_svg = os.path.join(OUTPUT_DIR, f"fastrelax_{group}_scores.svg")
 
         # plt.title(f'Rosetta FastRelax Results - Group {group} (Sorted by Mean Score)')
         plt.xlabel('Mutations')
