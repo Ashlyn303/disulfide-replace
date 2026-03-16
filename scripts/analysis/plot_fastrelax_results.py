@@ -181,8 +181,7 @@ def main():
             boxprops=dict(alpha=0.6)
         )
 
-        # 2. Overlay individual data points (Strip plot) - Disabled per user request
-        """
+        # 2. Overlay individual data points (Strip plot)
         sns.stripplot(
             data=group_df_melted,
             x='plot_label',
@@ -193,7 +192,6 @@ def main():
             jitter=True,
             alpha=0.4
         )
-        """
 
         # 3. Add terminal output for numerical mean and median
         print(f"\n--- Statistics for Group {group} ---")
