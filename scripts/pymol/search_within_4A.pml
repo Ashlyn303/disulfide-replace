@@ -44,8 +44,8 @@ for idx, (at1, at2) in enumerate(disulfide_pairs, 1):
     # Get full residue info (chain, resn, resi) for the two CYS
     cmd.iterate(f"index {at1[2]} or index {at2[2]}", "cys_residues.append((chain, resn, resi))")
     
-    # Selection for this specific pair's neighbors
-    pair_sel = f"index {at1[2]} or index {at2[2]}"
+    # Selection for this specific pair's sidechain atoms (CB and SG)
+    pair_sel = f"(chain {at1[0]} and resi {at1[1]} and name CB+SG) or (chain {at2[0]} and resi {at2[1]} and name CB+SG)"
     neighbor_sel = f"(byres (resn LEU+ILE+MET and not (name N+CA+C+O)) within 4 of ({pair_sel})) and name CA"
     
     lim_neighbors = []
